@@ -4,3 +4,6 @@ The web cam is always looking for a license plate in the feed. When it finds one
 
 
 The program uses OpenCV, KNN Algorithm
+
+
+![img_20170108_020349](https://cloud.githubusercontent.com/assets/5615972/21744793/20ce18b2-d547-11e6-9fe0-4d22a498b3ea.jpg)
