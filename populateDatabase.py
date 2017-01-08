@@ -13,13 +13,11 @@ print("Table created successfully")
 
 
 conn.execute("INSERT INTO license_plates (ID,NUMBERS) \
-      VALUES (1, 'Paul')");
+      VALUES (1, '456CC')");
 conn.execute("INSERT INTO license_plates (ID,NUMBERS) \
-      VALUES (2, 'Paul')");
+      VALUES (2, '999AA')");
 conn.execute("INSERT INTO license_plates (ID,NUMBERS) \
-      VALUES (3, 'Paul')");
-conn.execute("INSERT INTO license_plates (ID,NUMBERS) \
-      VALUES (4, 'Paul')");
+      VALUES (3, '123BB')");
 
 
 conn.commit()

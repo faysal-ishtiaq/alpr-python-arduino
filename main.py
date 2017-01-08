@@ -4,6 +4,7 @@ import os
 import serial
 import sqlite3
 import time
+import asyncio
 
 import DetectChars
 import DetectPlates
@@ -25,7 +26,6 @@ def get_serial_port():
 ard = serial.Serial(get_serial_port(), baudrate=9600, timeout=3)
 
 def open_gate():
-    #TODO: send data to arduino to switch on led
     print('open gate')
     ard.write(b'1')
     print('on')
@@ -39,28 +39,24 @@ def report_car():
 
 def main():
     cap = cv2.VideoCapture(0)
-
+            
     while True:
         ret, imgOriginalScene = cap.read()
-        #imgOriginalScene = frame
-        #cap.release()
-
         # attempt KNN training
         blnKNNTrainingSuccessful = DetectChars.loadKNNDataAndTrainKNN()
 
         # if KNN training was not successful
         if blnKNNTrainingSuccessful == False:
             print("\nerror: KNN traning was not successful\n")
-            #return
+            return
         # end if
 
         # open image
-        #imgOriginalScene = cv2.imread("1.png")
+        #imgOriginalScene = cv2.imread("imgOriginalScene.png")
 
         # if image was not read successfully
         if imgOriginalScene is None:
             print("\nerror: image not read from file \n\n")
-            #os.system("pause")
             #return
         # end if
 
@@ -74,8 +70,6 @@ def main():
 
         # if no plates were found
         if len(listOfPossiblePlates) == 0:
-            # inform user no plates were found
-            #print("\nno license plates were detected\n")
             pass
         else:
             # if we get in here list of possible plates has at leat one plate
@@ -86,14 +80,9 @@ def main():
             # sorted by string length descending order) is the actual plate
             licPlate = listOfPossiblePlates[0]
 
-            # show crop of plate and threshold of plate
-            #cv2.imshow("imgPlate", licPlate.imgPlate)
-            #cv2.imshow("imgThresh", licPlate.imgThresh)
 
             # if no chars were found in the plate
             if len(licPlate.strChars) == 0:
-                #print("\nno characters were detected\n\n")
-                #return
                 continue
             # end if
 
@@ -105,23 +94,26 @@ def main():
             cursor = conn.execute("SELECT ID FROM license_plates WHERE NUMBERS=? COLLATE NOCASE",(licPlate.strChars,))
             data = cursor.fetchall()
 
-            if len(data) > 0:
-                open_gate()
-            else:
-                report_car()
 
             # write license plate text to std out
             print("\nlicense plate read from image = " + licPlate.strChars + "\n")
-            print("----------------------------------------")
 
+            if len(data) > 0:
+                result = asyncio.sleep(open_gate())
+            else:
+                result = asyncio.sleep(report_car())
+                
+            print("----------------------------------------")
+                
             # write license plate text on the image
             writeLicensePlateCharsOnImage(imgOriginalScene, licPlate)
+            cv2.imwrite("imgOriginalScene.png", imgOriginalScene)
 
-            # show scene image again
-            #cv2.imshow("imgOriginalScene", imgOriginalScene)
+            cap.release()
+            cap = cv2.VideoCapture(0)
+            
 
             # write image out to file
-            cv2.imwrite("imgOriginalScene.png", imgOriginalScene)
 
         # end if else
 
